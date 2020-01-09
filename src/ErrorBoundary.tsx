@@ -1,14 +1,10 @@
 import React from "react";
 
-interface Props {
-  error: null | Error;
-}
-
 interface State {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundary extends React.Component {
   state: State = {
     hasError: false
   };
@@ -30,4 +26,4 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export { ErrorBoundary };

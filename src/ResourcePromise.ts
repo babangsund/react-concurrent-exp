@@ -4,28 +4,39 @@ enum Status {
   Error
 }
 
-class ResourcePromise<TResource> {
+export type ReadResult<TResource> = null | Error | TResource;
+
+export interface IResourcePromise<TResource> {
+  id: number;
+  read(): ReadResult<TResource>;
+}
+
+class ResourcePromise<TResource> implements IResourcePromise<TResource> {
+  static _id = 0;
+
+  id: number;
   _status: Status;
-  _result: null | Error | TResource;
+  _result: ReadResult<TResource>;
   _suspender: Promise<Error | TResource>;
 
   constructor(resourcePromise: Promise<TResource>) {
+    this.id = ResourcePromise._id++;
     this._result = null;
     this._status = Status.Pending;
     this._suspender = resourcePromise.then(this._onSuccess, this._onError);
   }
 
-  _onSuccess(result: TResource) {
+  _onSuccess = (result: TResource) => {
     this._status = Status.Success;
     this._result = result;
     return result;
-  }
+  };
 
-  _onError(error: Error) {
+  _onError = (error: Error) => {
     this._status = Status.Error;
     this._result = error;
     return error;
-  }
+  };
 
   read() {
     switch (this._status) {
@@ -35,10 +46,8 @@ class ResourcePromise<TResource> {
         return this._result;
       case Status.Error:
         throw this._result;
-      default:
-        break;
     }
   }
 }
 
-export default ResourcePromise;
+export { ResourcePromise };

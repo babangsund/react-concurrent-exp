@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+html,
+body,
+p {
+  margin: 0;
+}
+
+img {
+  width: 200px;
+  height: 200px;
+}
+
+article {
+  margin: 5px;
+  padding: 5px;
+  border: 3px solid rgb(35, 39, 47);
+  background-color: rgb(50, 55, 64);
+}
