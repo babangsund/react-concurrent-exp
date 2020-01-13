@@ -7,14 +7,14 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { IResourcePromise } from "./ResourcePromise";
 import { fetchResource, fetchImage } from "./fetchResource";
 
-interface IUser {
-  userName: string;
-  firstName: string;
-}
-
 interface IPost {
   id: number;
   text: string;
+}
+
+interface IUser {
+  userName: string;
+  firstName: string;
 }
 
 interface IAppResource {
@@ -23,12 +23,16 @@ interface IAppResource {
   images: IResourcePromise<Array<string>>;
 }
 
-interface ResourceProps {
-  resource: IAppResource;
-}
-
 interface ImgProps {
   src: string;
+}
+
+interface FilterProps {
+  isDeferred: boolean;
+}
+
+interface ResourceProps {
+  resource: IAppResource;
 }
 
 // Weird internal type issue excludes "together" in some cases.
@@ -65,17 +69,29 @@ const App: React.FC = () => {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <button
-          disabled={isPending}
-          onClick={() => {
-            startTransition(() => {
-              setResource(fetchAppResource());
-            });
-          }}
-        >
-          Refetch resource
-        </button>
-        <List resource={resource} />
+        <div className="row">
+          <div>
+            <button
+              disabled={isPending}
+              onClick={() => {
+                startTransition(() => {
+                  setResource(fetchAppResource());
+                });
+              }}
+            >
+              Refetch resource
+            </button>
+            <List resource={resource} />
+          </div>
+          <div>
+            deferred
+            <Filter isDeferred />
+          </div>
+          <div>
+            raw
+            <Filter isDeferred={false} />
+          </div>
+        </div>
       </header>
     </div>
   );
@@ -168,6 +184,43 @@ const List: React.FC<ResourceProps> = ({ resource }) => {
       </div>
     </div>
   );
+};
+
+const Filter: React.FC<FilterProps> = ({ isDeferred }) => {
+  const [filter, setText] = React.useState("");
+  const deferredFilter = React.useDeferredValue(filter, { timeoutMs: 5000 });
+  return (
+    <div className="App">
+      <input value={filter} onChange={e => setText(e.target.value)} />
+      <div className="row">
+        <FilterList filter={isDeferred ? deferredFilter : filter} />
+      </div>
+    </div>
+  );
+};
+
+const filterListItems = Array(200)
+  .fill(0)
+  .map(Math.random)
+  .map(String);
+
+const FilterList: React.FC<{ filter: string }> = React.memo(({ filter }) => {
+  const items = filterListItems.filter(x => x.includes(filter));
+  return (
+    <ul>
+      {items.map(x => (
+        <FilterItem>{x}</FilterItem>
+      ))}
+    </ul>
+  );
+});
+
+const FilterItem: React.FC = ({ children }) => {
+  const now = performance.now();
+  while (performance.now() - now < 3) {
+    // block thread
+  }
+  return <li>{children}</li>;
 };
 
 export default App;
